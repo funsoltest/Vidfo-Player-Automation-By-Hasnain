@@ -5,6 +5,7 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.FluentWait;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
@@ -64,11 +65,22 @@ public class VIDFO {
     }
 
     // 🔹 New Function: Check First Launch
-    @BeforeMethod
+//    @BeforeMethod
     public boolean isFirstTime() {
         try {
-            // Agar NextBtn dikhta hai to first time hai
-            driver.findElement(By.xpath("//android.widget.TextView[@resource-id=\"vidfo.video.player.videoplayer:id/nextBtn\"]"));
+            // 3 sec baad start, 25 sec tak check
+            clickIfExists(By.xpath("//android.widget.Button"), 3, 25);
+
+            // Check karo nextBtn hai ya continueBtn
+            if (clickIfExists(By.xpath("//android.widget.TextView[@resource-id=\"vidfo.video.player.videoplayer:id/nextBtn\"]"), 1, 5)) {
+                // NextBtn click ho gaya
+                System.out.println("NextBtn clicked");
+            } else {
+                // Agar nextBtn nahi mila to continueBtn try karo
+                clickIfExists(By.xpath("//android.widget.TextView[@resource-id=\"vidfo.video.player.videoplayer:id/continueBtn\"]"), 1, 5);
+                System.out.println("ContinueBtn clicked");
+            }
+
             return true;
         } catch (Exception e) {
             return false;
@@ -125,6 +137,13 @@ public class VIDFO {
         }
     }
 
+    // Reusable function
+    public void clickWithWait(By locator) {
+        new WebDriverWait(driver, Duration.ofSeconds(10))
+                .until(ExpectedConditions.elementToBeClickable(locator))
+                .click();
+    }
+
     // Terminate App
 
     public void terminateApp(AppiumDriver driver, String appPackage) {
@@ -137,26 +156,61 @@ public class VIDFO {
         }
     }
 
-    // Revoke Permissions
     public void revokeAllPermissions(String appPackage) {
-        try {
-            String[] permissions = {
-                    "android.permission.READ_MEDIA_VIDEO",
-                    "android.permission.READ_MEDIA_AUDIO",
-                    "android.permission.POST_NOTIFICATIONS"
-            };
+        String[] permissions = {
+                "android.permission.READ_MEDIA_VIDEO",
+                "android.permission.READ_MEDIA_AUDIO",
+                "android.permission.POST_NOTIFICATIONS"
+        };
 
-            for (String permission : permissions) {
-                driver.executeScript("mobile: shell", Map.of(
+        for (String permission : permissions) {
+            try {
+                // Store result as String (or Object)
+                Object result = driver.executeScript("mobile: shell", Map.of(
                         "command", "pm revoke " + appPackage + " " + permission
                 ));
-            }
 
-            System.out.println("Permissions revoked");
-        } catch (Exception e) {
-            System.out.println("Permission revoke failed");
+                System.out.println("✓ Revoked: " + permission);
+                System.out.println("Result: " + result);
+
+            } catch (Exception e) {
+                System.out.println("✗ Failed to revoke " + permission + ": " + e.getMessage());
+            }
         }
     }
+
+    public void resetAppData(String appPackage) {
+        try {
+            driver.executeScript("mobile: shell", Map.of(
+                    "command", "pm clear " + appPackage
+            ));
+            System.out.println("App data cleared - permissions reset");
+        } catch (Exception e) {
+            System.out.println("Failed to clear app data: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+//    // Revoke Permissions
+//    public void revokeAllPermissions(String appPackage) {
+//        try {
+//            String[] permissions = {
+//                    "android.permission.READ_MEDIA_VIDEO",
+//                    "android.permission.READ_MEDIA_AUDIO",
+//                    "android.permission.POST_NOTIFICATIONS"
+//            };
+//
+//            for (String permission : permissions) {
+//                driver.executeScript("mobile: shell", Map.of(
+//                        "command", "pm revoke " + appPackage + " " + permission
+//                ));
+//            }
+//
+//            System.out.println("Permissions revoked");
+//        } catch (Exception e) {
+//            System.out.println("Permission revoke failed");
+//        }
+//    }
 
 }
 

@@ -30,12 +30,17 @@ public class DebugAdsTestCase extends VIDFO {
             System.out.println("First time detected! 1st Session");
             // Handle first time logic
             System.out.println("Onboarding Started");
-            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(20));
-            driver.findElement(By.xpath("//android.widget.TextView[@resource-id=\"vidfo.video.player.videoplayer:id/nextBtn\"]")).click();
-            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(20));
-            driver.findElement(By.xpath("//android.widget.Button[@resource-id=\"vidfo.video.player.videoplayer:id/onBoardingNextBtn\"]")).click();
-            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-            driver.findElement(By.xpath("//android.widget.Button[@resource-id=\"vidfo.video.player.videoplayer:id/onBoardingNextBtn\"]")).click();
+            // Check karo nextBtn hai ya continueBtn
+            if (clickIfExists(By.xpath("//android.widget.TextView[@resource-id=\"vidfo.video.player.videoplayer:id/nextBtn\"]"), 1, 5)) {
+                // NextBtn click ho gaya
+                System.out.println("NextBtn clicked");
+            } else {
+                // Agar nextBtn nahi mila to continueBtn try karo
+                clickIfExists(By.xpath("//android.widget.TextView[@resource-id=\"vidfo.video.player.videoplayer:id/continueBtn\"]"), 1, 5);
+                System.out.println("ContinueBtn clicked");
+            }
+            clickWithWait(By.xpath("//android.widget.Button[@resource-id=\"vidfo.video.player.videoplayer:id/onBoardingNextBtn\"]"));
+            clickWithWait(By.xpath("//android.widget.Button[@resource-id=\"vidfo.video.player.videoplayer:id/onBoardingNextBtn\"]"));
             driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
             driver.findElement(By.xpath("//android.widget.Button")).click();
             System.out.println("User Land over Home Screen");
